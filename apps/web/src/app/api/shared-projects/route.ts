@@ -47,6 +47,25 @@ function sharedProjectsDirectory() {
   return configured ? path.resolve(configured) : null;
 }
 
+/**
+ * The bare OS error from a failed mkdir names the path it tried, but not the
+ * setting that put it there - which reads like a hard-coded folder instead of
+ * a stale `LAYERLING_SHARED_PROJECTS_DIR`. This adds that hint while keeping
+ * the original error's `code` (ENOENT/EACCES/...) for anything that branches
+ * on it.
+ */
+async function ensureSharedProjectsRoot(root: string) {
+  try {
+    await fs.mkdir(root, { recursive: true });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw Object.assign(new Error(`${reason} (check ${SHARED_PROJECTS_ENV})`), {
+      code: (error as NodeJS.ErrnoException).code,
+      path: (error as NodeJS.ErrnoException).path,
+    });
+  }
+}
+
 function sharedProjectStem(requestedName: string) {
   return path.basename(requestedName.replace(/\.(lyl|skf)$/i, ""))
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
@@ -232,7 +251,7 @@ export async function GET(request: Request) {
   const root = sharedProjectsDirectory();
   if (!root) return disabledResponse();
   try {
-    await fs.mkdir(root, { recursive: true });
+    await ensureSharedProjectsRoot(root);
     const requestUrl = new URL(request.url);
     const folder = await resolveFolder(root, requestUrl.searchParams.get("path"));
     const folderPath = folderKey(root, folder);
@@ -554,7 +573,7 @@ export async function DELETE(request: Request) {
   let lockHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
   let lockPath = "";
   try {
-    await fs.mkdir(root, { recursive: true });
+    await ensureSharedProjectsRoot(root);
     const requestUrl = new URL(request.url);
     const folder = await resolveFolder(root, requestUrl.searchParams.get("path"));
     if (requestUrl.searchParams.get("deleteFolder") === "1") {
@@ -616,7 +635,7 @@ export async function POST(request: Request) {
   let temporaryPath = "";
   let temporaryThumbnailPath = "";
   try {
-    await fs.mkdir(root, { recursive: true });
+    await ensureSharedProjectsRoot(root);
     const requestUrl = new URL(request.url);
     const folder = await resolveFolder(root, requestUrl.searchParams.get("path"));
     const folderPath = folderKey(root, folder);

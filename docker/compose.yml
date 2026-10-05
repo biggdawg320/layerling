@@ -12,6 +12,13 @@ services:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       NEXT_TELEMETRY_DISABLED: "1"
+      # Shared project folder: the path here must match the volume target
+      # below exactly - the app creates and reads only that path, nothing
+      # else. The container runs as uid/gid 999, so the host directory must
+      # be writable by 999:999 (`mkdir -p ./shared-projects && chown -R
+      # 999:999 ./shared-projects` before the first start). After changing
+      # this value, recreate the container with `up -d`; `restart` keeps the
+      # environment the container already started with.
       # LAYERLING_SHARED_PROJECTS_DIR: "/shared-projects"
     # volumes:
     #   - ./shared-projects:/shared-projects:z

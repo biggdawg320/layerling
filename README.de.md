@@ -187,7 +187,11 @@ Befehle im Alltag:
 
 Das Image führt `next start` im Produktionsmodus aus, die MCP-Brücke steht dort also nicht zur Verfügung. Für einen
 gemeinsamen Projektordner ein beschreibbares Verzeichnis einbinden und in `compose.yml` `LAYERLING_SHARED_PROJECTS_DIR`
-setzen (siehe [Gemeinsame Entwürfe im Netz](#gemeinsame-entwürfe-im-netz)).
+genau auf den Pfad setzen, unter dem das Volume eingebunden ist (siehe [Gemeinsame Entwürfe im Netz](#gemeinsame-entwürfe-im-netz)).
+Der Container läuft als uid/gid `999`, das Verzeichnis auf dem Host muss also für diesen Benutzer beschreibbar sein, zum
+Beispiel mit `mkdir -p ./shared-projects && chown -R 999:999 ./shared-projects` vor dem ersten Start. Eine Änderung der
+Variable wird erst mit `docker compose up -d` wirksam; `docker compose restart` behält die Umgebung, mit der der
+Container gestartet wurde.
 
 ### Gemeinsame Entwürfe im Netz
 

@@ -182,7 +182,7 @@ Everyday commands:
 - **Restart:** `docker compose -f docker/compose.yml up -d`
 - **Update** (after pulling new code or extracting a new ZIP): `docker compose -f docker/compose.yml up -d --build`; with the ready-made image `docker compose -f docker/compose.yml pull` and then `up -d`
 
-The image runs `next start` in production mode, so the MCP bridge is not available there. To offer a shared project folder, bind a writable directory and set `LAYERLING_SHARED_PROJECTS_DIR` in `compose.yml` (see [Shared Designs on a Network](#shared-designs-on-a-network)).
+The image runs `next start` in production mode, so the MCP bridge is not available there. To offer a shared project folder, bind a writable directory and set `LAYERLING_SHARED_PROJECTS_DIR` in `compose.yml` to the exact same path the volume is mounted at (see [Shared Designs on a Network](#shared-designs-on-a-network)). The container runs as uid/gid `999`, so the host directory needs to be writable by that user, for example `mkdir -p ./shared-projects && chown -R 999:999 ./shared-projects` before the first start. Changing the variable afterwards needs `docker compose up -d` to take effect; `docker compose restart` keeps the environment the container already started with.
 
 ### Shared Designs on a Network
 
